@@ -6,8 +6,7 @@ Welcome to BlueBand Vector-DB, a `vectra-on-filecoin` database for indexing and 
 
 ## IPC Subnet
 
-Catalog metadata are stored on smart contracts deployed on subnets, facilitating retrieval of IPNS Ids, CIDs and indexed URIs interchangely.
-
+Catalog metadatsa are stored on smart contracts deployed on subnets, facilitating retrieval of IPNS Ids, CIDs and indexed URIs interchangely.
 
 |                   |                                                       |
 | ----------------- | ----------------------------------------------------- |
@@ -38,8 +37,8 @@ To locally test BlueBand Vector-DB, follow these steps:
 
 3. Configure Environment Variables:
 
-   - OpenAI Key: Add your [OpenAI]() and [Lighthouse]() API key to the `.env` file.
    - Ensure that IPC Subnet is running locally. See [Instructuctions]()
+   - Add your [IPC chainId](), [OpenAI Keys]() and [Lighthous Keyse]() value to the `.env` file in node-test.
 
 4. Run Tests:
    ```bash
