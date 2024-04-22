@@ -1,5 +1,4 @@
 import fs from "fs";
-import dotenv from "dotenv";
 import { createIndex, addDocuments, queryIndex } from "vectra";
 import {
   defineChain,
@@ -10,15 +9,16 @@ import {
 } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { localhost } from "viem/chains";
+import dotenv from "dotenv";
 dotenv.config();
 
+const chianId = process.env.CHAIN_ID;
 const privateKey = process.env.PRIVATE_KEY;
 const apiKey = process.env.LIGHTHOUSE_API_KEY;
-const openaiKey = process.env.OPENAI_KEY;
 
 const localhostChain = defineChain({
   ...localhost,
-  id: 749438201609197,
+  id: parseInt(chianId),
   url: "http://localhost:8545",
 });
 
@@ -33,7 +33,7 @@ const callWriteContract = async (
   // define  IPC chain
   const localhostChain = defineChain({
     ...localhost,
-    id: 749438201609197,
+    id: parseInt(chianId),
     url: "http://localhost:8545/",
   });
 
@@ -52,7 +52,7 @@ const callWriteContract = async (
   }
 };
 
-describe("Vectra", function () {
+describe("Blueband Vector-db", function () {
   let indexName;
   let client;
   let abi;
@@ -96,7 +96,7 @@ describe("Vectra", function () {
     it("should retrieve index IPNS from IPC subnet", async function () {
       const localhostChain = defineChain({
         ...localhost,
-        id: 749438201609197,
+        id: parseInt(chianId),
         url: "http://localhost:8545",
       });
 
@@ -166,6 +166,7 @@ describe("Vectra", function () {
   });
 
   describe("queryIndex", function () {
+
     it("should return relevant documents for a given query", async function () {
       const keys = "docs/wikipedia/vectra.json";
       const query = "what sports is this about?";
