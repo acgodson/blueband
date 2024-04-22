@@ -6,9 +6,8 @@ Welcome to BlueBand Vector-DB, a `vectra-on-filecoin` database for indexing and 
 
 ## IPC Subnet
 
-Catalog metadata are stored on smart contracts deployed on subnets, facilitating retrieval of IPNS Ids, CIDs and indexed URIs interchangely. Here are the details:
+Catalog metadata are stored on smart contracts deployed on subnets, facilitating retrieval of IPNS Ids, CIDs and indexed URIs interchangely.
 
-Certainly! Here's the information presented in a README table:
 
 |                   |                                                       |
 | ----------------- | ----------------------------------------------------- |
