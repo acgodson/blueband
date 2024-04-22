@@ -13,7 +13,7 @@ contract BlueBand {
     mapping(address => string[]) public owners;
 
     // Function to create a new index catalog
-    function createIndex(string memory indexName) external  {
+    function createIndex(string memory indexName) external {
         indexes[indexName].owner = msg.sender;
         indexes[indexName].version = 1;
         owners[msg.sender].push(indexName);
@@ -24,7 +24,7 @@ contract BlueBand {
         string memory indexName,
         string memory uri,
         string memory documentCID
-    ) external  {
+    ) external {
         require(
             indexes[indexName].owner == msg.sender,
             "Only index owner can add documents"
@@ -35,16 +35,12 @@ contract BlueBand {
     }
 
     // Function to retrieve document CID by URI
-    function getURIByDocumentCID(string memory indexId, string memory uri)
+    function getURIByDocumentCID(string memory indexId, string memory cid)
         public
         view
         returns (string memory)
     {
-        require(
-            bytes(indexes[indexId].uriToId[uri]).length > 0,
-            "Document CID not found"
-        );
-        return indexes[indexId].uriToId[uri];
+        return indexes[indexId].idToUri[cid];
     }
 
     function getDocumentCIDByURI(string memory indexId, string memory uri)
@@ -52,10 +48,6 @@ contract BlueBand {
         view
         returns (string memory)
     {
-        require(
-            bytes(indexes[indexId].uriToId[uri]).length > 0,
-            "Document CID not found"
-        );
         return indexes[indexId].uriToId[uri];
     }
 
