@@ -1,37 +1,69 @@
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.19;
 
 contract BlueBand {
-    
     struct Index {
         uint256 version;
         uint256 count;
-        address owner; // Owner of the index
-        mapping(string => string) uriToId; // Mapping from URI to Document CID  
+        address owner;
+        mapping(string => string) uriToId;
+        mapping(string => string) idToUri;
     }
-    
-    mapping(string => Index) indexes; // Mapping from Index ID (e.g., "blueband") to Index struct
-    
+
+    mapping(string => Index) public indexes;
+    mapping(address => string[]) public owners;
+
     // Function to create a new index catalog
-    function createIndex(string memory indexId) public {
-        require(indexes[indexId].version == 0, "Index already exists");
-        indexes[indexId].owner = msg.sender;
-        indexes[indexId].version = 1;
-        // Emit event or perform any other necessary actions
+    function createIndex(string memory indexName) external  {
+        indexes[indexName].owner = msg.sender;
+        indexes[indexName].version = 1;
+        owners[msg.sender].push(indexName);
     }
-    
+
     // Function to add a new document CID to an existing index
-    function addDocument(string memory indexId, string memory uri, string memory documentCID) public {
-        require(indexes[indexId].owner == msg.sender, "Only index owner can add documents");
-        indexes[indexId].count++;
-        indexes[indexId].uriToId[uri] = documentCID;
-        // Increment count and update version 
-        // Emit event later
+    function addDocument(
+        string memory indexName,
+        string memory uri,
+        string memory documentCID
+    ) external  {
+        require(
+            indexes[indexName].owner == msg.sender,
+            "Only index owner can add documents"
+        );
+        indexes[indexName].count++;
+        indexes[indexName].uriToId[uri] = documentCID;
+        indexes[indexName].idToUri[documentCID] = uri;
     }
-    
+
     // Function to retrieve document CID by URI
-    function getDocumentCIDByURI(string memory indexId, string memory uri) public view returns (string memory) {
-        require(bytes(indexes[indexId].uriToId[uri]).length > 0, "Document CID not found");
+    function getURIByDocumentCID(string memory indexId, string memory uri)
+        public
+        view
+        returns (string memory)
+    {
+        require(
+            bytes(indexes[indexId].uriToId[uri]).length > 0,
+            "Document CID not found"
+        );
         return indexes[indexId].uriToId[uri];
     }
+
+    function getDocumentCIDByURI(string memory indexId, string memory uri)
+        public
+        view
+        returns (string memory)
+    {
+        require(
+            bytes(indexes[indexId].uriToId[uri]).length > 0,
+            "Document CID not found"
+        );
+        return indexes[indexId].uriToId[uri];
+    }
+
+    function getOwnersIndexes(address owner)
+        public
+        view
+        returns (string[] memory)
+    {
+        return owners[owner];
+    }
 }
-  
