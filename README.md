@@ -2,6 +2,8 @@
 
 Welcome to BlueBand Vector-DB, a `vectra-on-filecoin` database for indexing and managing pinned datasets easily.
 
+👉 [Full Video](https://vimeo.com/manage/videos/937456306)
+
 ## IPC Subnet
 
 Catalog metadata are stored on smart contracts deployed on subnets, facilitating retrieval of IPNS Ids, CIDs and indexed URIs interchangely. Here are the details:
@@ -51,7 +53,7 @@ BlueBand-Client is a specialized application built on top of BlueBand, tailored 
 
 **Description:** BlueBand-Client streamlines the process of organizing and accessing health information. It leverages the power of BlueBand's vector database to provide quick and accurate indexing of health-related data.
 
-[Demo]()
+[Demo](https://vimeo.com/manage/videos/937456306)
 
 **Contributors:**
 
