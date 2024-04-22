@@ -1,5 +1,5 @@
 {
-  "name": "vectra",
+  "name": "vector-db",
   "author": "Godson",
   "description": "porting vectra's local file system db to filecoin.",
   "version": "0.7.0",

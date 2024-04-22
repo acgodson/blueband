@@ -33,7 +33,7 @@ To locally test BlueBand Vector-DB, follow these steps:
 
    ```bash
    cd node-test
-   npm install && npm link blueband
+   npm install && npm link vector-db
    ```
 
 3. Configure Environment Variables:

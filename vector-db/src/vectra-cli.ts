@@ -1,12 +1,12 @@
-// vectra-cli.ts
-
-import fs from "fs";
 import { LocalDocumentIndex } from "./LocalDocumentIndex";
 import { WebFetcher } from "./WebFetcher";
 import { OpenAIEmbeddings } from "./OpenAIEmbeddings";
 import { Colorize } from "./internals";
 import { WalletClient } from "viem";
-// import lighthouse from "@lighthouse-web3/sdk";
+import dotenv from "dotenv";
+dotenv.config();
+
+const openaiKey = process.env.OPENAI_KEY;
 
 //TODO: use index to update the catalog later
 export async function createIndex(apiKey: string, client: WalletClient) {
@@ -31,7 +31,7 @@ export async function addDocuments(
   uris: string[],
   chunkSize: number
 ) {
-  const keysData = JSON.parse(await fs.readFileSync(keys, "utf-8"));
+  const keysData = { apiKey: openaiKey } as any;
   const embeddings = new OpenAIEmbeddings(
     Object.assign({ model: "text-embedding-ada-002" }, keysData)
   );
@@ -90,7 +90,7 @@ export async function queryIndex(
   const queryResults = [];
 
   // Create embeddings
-  const keysData = JSON.parse(await fs.readFileSync(keys, "utf-8"));
+  const keysData = { apiKey: openaiKey } as any;
   const embeddings = new OpenAIEmbeddings(
     Object.assign({ model: "text-embedding-ada-002" }, keysData)
   );

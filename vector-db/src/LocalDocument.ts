@@ -5,6 +5,11 @@ import { LocalDocumentIndex } from "./LocalDocumentIndex";
 import { createPublicClient, defineChain, http } from "viem";
 import { localhost } from "viem/chains";
 import axios from "axios";
+import dotenv from "dotenv";
+dotenv.config();
+
+
+const chianId = process.env.CHAIN_ID;
 
 const abi = [
   {
@@ -256,7 +261,7 @@ export class LocalDocument {
       try {
         const localhostChain = defineChain({
           ...localhost,
-          id: 749438201609197,
+          id: parseInt(chianId || "0"),
           url: "http://localhost:8545",
         });
         const publicClient = createPublicClient({

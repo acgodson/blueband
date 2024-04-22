@@ -24,6 +24,11 @@ import {
 import { localhost } from "viem/chains";
 import lighthouse from "@lighthouse-web3/sdk";
 import axios from "axios";
+import dotenv from "dotenv";
+dotenv.config();
+
+
+const chianId = process.env.CHAIN_ID;
 
 export interface DocumentQueryOptions {
   maxDocuments?: number;
@@ -239,7 +244,7 @@ export class LocalDocumentIndex extends LocalIndex {
     try {
       const localhostChain = defineChain({
         ...localhost,
-        id: 749438201609197,
+        id: parseInt(chianId || "0"),
         url: "http://localhost:8545",
       });
 
@@ -304,7 +309,7 @@ export class LocalDocumentIndex extends LocalIndex {
     try {
       const localhostChain = defineChain({
         ...localhost,
-        id: 749438201609197,
+        id: parseInt(chianId || "0"),
         url: "http://localhost:8545",
       });
 
@@ -341,7 +346,7 @@ export class LocalDocumentIndex extends LocalIndex {
     try {
       const localhostChain = defineChain({
         ...localhost,
-        id: 749438201609197,
+        id: parseInt(chianId || "0"),
         url: "http://localhost:8545",
       });
 
@@ -730,7 +735,7 @@ export class LocalDocumentIndex extends LocalIndex {
       // Load catalog from smart contract
       // const localhostChain = defineChain({
       //   ...localhost,
-      //   id: 749438201609197,
+      //   id: parseInt(chianId || "0"),
       //   url: "http://localhost:8545",
       // });
 
