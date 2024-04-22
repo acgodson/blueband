@@ -5,25 +5,23 @@ import { LocalDocumentIndex } from "./LocalDocumentIndex";
 import { WebFetcher } from "./WebFetcher";
 import { OpenAIEmbeddings } from "./OpenAIEmbeddings";
 import { Colorize } from "./internals";
+import { WalletClient } from "viem";
+// import lighthouse from "@lighthouse-web3/sdk";
 
 //TODO: use index to update the catalog later
-export async function createIndex(index: string, apiKey: string) {
+export async function createIndex(apiKey: string, client: WalletClient) {
   const indexInstance = new LocalDocumentIndex({
     apiKey: apiKey,
   });
-  console.log(Colorize.output(`creating index on lightlink`));
-  await indexInstance.createIndex({
+  console.log(Colorize.output(`creating index on lightHouse`));
+  const newIndex = await indexInstance.createIndex({
     version: 1,
     deleteIfExists: true,
     apiKey: apiKey,
   });
-}
-
-export async function deleteIndex(index: string) {
-  const folderPath = index;
-  console.log(Colorize.output(`deleting index at ${folderPath}`));
-  // const indexInstance = new LocalDocumentIndex({ folderPath });
-  // await indexInstance.deleteIndex();
+  if (newIndex) {
+    return newIndex;
+  }
 }
 
 export async function addDocuments(
@@ -33,7 +31,6 @@ export async function addDocuments(
   uris: string[],
   chunkSize: number
 ) {
-  console.log("Adding Web Pages to Index");
   const keysData = JSON.parse(await fs.readFileSync(keys, "utf-8"));
   const embeddings = new OpenAIEmbeddings(
     Object.assign({ model: "text-embedding-ada-002" }, keysData)
@@ -49,18 +46,24 @@ export async function addDocuments(
   });
 
   const webFetcher = new WebFetcher();
+  let ids: any[] = [];
   for (const uri of uris) {
-    console.log(uri);
     try {
       console.log(Colorize.progress(`fetching ${uri}`));
       const fetcher = webFetcher;
       await fetcher.fetch(uri, async (uri, text, docType) => {
         console.log(Colorize.replaceLine(Colorize.progress(`indexing ${uri}`)));
 
-        await indexInstance.upsertDocument(uri, text, docType);
+        const documentResult = await indexInstance.upsertDocument(
+          uri,
+          text,
+          docType
+        );
+        ids.push(documentResult.id);
         console.log(Colorize.replaceLine(Colorize.success(`added ${uri}`)));
         return true;
       });
+      return { uris, ids };
     } catch (err: unknown) {
       console.log(
         Colorize.replaceLine(
@@ -69,45 +72,6 @@ export async function addDocuments(
       );
     }
   }
-}
-
-export async function removeDocuments(
-  index: string,
-  apiKey: string,
-  list: string,
-  uris: string[]
-) {
-  const folderPath = index;
-  const indexInstance = new LocalDocumentIndex({
-    apiKey: apiKey,
-  });
-  // Remove documents
-  for (const uri of uris) {
-    console.log(`removing ${uri}`);
-    await indexInstance.deleteDocument(uri);
-  }
-  await updateURIFile(list, uris);
-}
-
-// Function to update the file containing the URIs after deleting documents
-async function updateURIFile(uriFile: string, urisToDelete: string[]) {
-  try {
-    let uriContents = await fs.readFileSync(uriFile, "utf-8");
-    for (const uri of urisToDelete) {
-      //   uriContents = uriContents.replace(`${uri}\n`, "");
-    }
-    await fs.writeFileSync(uriFile, uriContents);
-    console.log("URI file updated successfully.");
-  } catch (error) {
-    console.error(`Error updating URI file: ${error}`);
-  }
-}
-
-export async function getIndexStats(index: string, apiKey: string) {
-  const indexInstance = new LocalDocumentIndex({ apiKey });
-  const stats = await indexInstance.getCatalogStats();
-  console.log(Colorize.title("Index Stats"));
-  console.log(Colorize.output(stats));
 }
 
 export async function queryIndex(
@@ -137,8 +101,6 @@ export async function queryIndex(
     apiKey,
     embeddings,
   });
-
-  // return indexInstance;
 
   // Query index
   const results = await indexInstance.queryDocuments(query, {
@@ -175,3 +137,24 @@ export async function queryIndex(
 
   return queryResults;
 }
+
+export async function deleteIndex(index: string) {}
+
+export async function removeDocuments(
+  index: string,
+  apiKey: string,
+  list: string,
+  uris: string[]
+) {}
+
+export async function getIndexStats(index: string, apiKey: string) {}
+
+// const deleteAllLightHouseIndex = async (apiKey: string) => {
+//   const allKeys = await lighthouse.getAllKeys(apiKey);
+//   const data = allKeys.data;
+//   for (let i = 0; i < data.length; i++) {
+//     const element = data[i];
+//     const removeRes = await lighthouse.removeKey(element.ipnsName, apiKey);
+//     console.log(removeRes.data);
+//   }
+// };

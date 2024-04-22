@@ -13,6 +13,7 @@ import {
   QueryResult,
 } from "./types";
 import { config } from "yargs";
+import { WalletClient } from "viem";
 
 export interface CreateIndexConfig {
   version: number;
@@ -21,6 +22,7 @@ export interface CreateIndexConfig {
   metadata_config?: {
     indexed?: string[];
   };
+  client?: WalletClient;
 }
 
 export interface CreateIndexOptions {
@@ -34,7 +36,7 @@ export interface CreateIndexOptions {
  * Each index is a folder on disk containing an index.json file and an optional set of metadata files.
  */
 export class LocalIndex {
-  private readonly _indexName: string;
+  private readonly _indexName: string | undefined;
 
   private _data?: IndexData;
   private _update?: IndexData;
@@ -45,14 +47,14 @@ export class LocalIndex {
    * @param indexName Optional name of the index file. Defaults to index.json.
    */
   public constructor(indexName?: string) {
-    this._indexName = indexName || "index.json";
+    this._indexName = indexName;
   }
 
   /**
    * Optional name of the index file.
    */
-  public get indexName(): string {
-    return this._indexName;
+  public get indexName(): string | undefined {
+    return this._indexName || this._data?.ipnsId;
   }
 
   /**
@@ -66,9 +68,7 @@ export class LocalIndex {
     }
 
     await this.loadIndexData(apiKey);
-
     if (this._data) {
-      console.log("begining update", Object.assign({}, this._data));
       this._update = Object.assign({}, this._data);
     }
   }
@@ -88,7 +88,6 @@ export class LocalIndex {
     try {
       // Generate IPNS key using Lighthouse SDK
       const keyResponse = await lighthouse.generateKey(config.apiKey);
-      console.log(keyResponse.data);
 
       this._data = {
         ipnsName: keyResponse.data.ipnsName,
@@ -156,24 +155,6 @@ export class LocalIndex {
    * @remarks
    * This method saves the index to disk.
    */
-  //   public async endUpdate(): Promise<void> {
-  //     if (!this._update) {
-  //       throw new Error("No update in progress");
-  //     }
-
-  //     try {
-  //       // Save index
-  //       await fs.writeFile(
-  //         path.join(this._folderPath, this._indexName),
-  //         JSON.stringify(this._update)
-  //       );
-  //       this._data = this._update;
-  //       this._update = undefined;
-  //     } catch (err: unknown) {
-  //       throw new Error(`Error saving index: ${(err as any).toString()}`);
-  //     }
-  //   }
-
   public async endUpdate(apiKey: string): Promise<void> {
     if (!this._data) {
       throw new Error("No data");
@@ -276,18 +257,18 @@ export class LocalIndex {
     indexName: string | undefined
   ): Promise<boolean> {
     try {
-      return true;
+      // return true;
 
-      // const response = await axios.get(
-      //   `https://gateway.lighthouse.storage/ipns/${indexName}`
-      // );
-      // const data = response.data;
+      const response = await axios.get(
+        `https://gateway.lighthouse.storage/ipns/${indexName}`
+      );
+      const data = response.data;
 
-      // if (data) {
-      //   return true;
-      // } else {
-      //   false;
-      // }
+      if (data) {
+        return true;
+      } else {
+        false;
+      }
 
       // console.log("index created", data);
 
@@ -439,18 +420,6 @@ export class LocalIndex {
   /**
    * Ensures that the index has been loaded into memory.
    */
-  //   protected async loadIndexData(): Promise<void> {
-  //     if (this._data) {
-  //       return;
-  //     }
-
-  //     if (!(await this.isIndexCreated())) {
-  //       throw new Error("Index does not exist");
-  //     }
-
-  //     const data = await fs.readFile(path.join(this._folderPath, this.indexName));
-  //     this._data = JSON.parse(data.toString());
-  //   }
 
   protected async loadIndexData(apiKey: string): Promise<void> {
     if (!this._data && !this._indexName) {
@@ -492,7 +461,7 @@ export class LocalIndex {
       );
       const data = response.data;
 
-      console.log("index created", data);
+      // console.log("index created", data);
 
       // Parse the retrieved data
       this._data = data;
@@ -538,13 +507,6 @@ export class LocalIndex {
           metadata[key] = item.metadata[key];
         }
       }
-
-      // Save remaining metadata to disk
-      // metadataFile = `${v4}.json`;
-
-      //@ts-ignore
-      // const metadataPath = path.join(this._folderPath, metadataFile);
-      // await fs.writeFile(metadataPath, JSON.stringify(item.metadata));
     } else if (item.metadata) {
       metadata = item.metadata;
     }
@@ -556,10 +518,6 @@ export class LocalIndex {
       vector: item.vector,
       norm: ItemSelector.normalize(item.vector),
     };
-
-    // if (metadataFile) {
-    //   newItem.metadataFile = metadataFile;
-    // }
 
     // Add item to index
     if (!unique) {

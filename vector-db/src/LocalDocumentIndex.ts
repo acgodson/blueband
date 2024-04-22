@@ -22,6 +22,8 @@ import {
   WalletClient,
 } from "viem";
 import { localhost } from "viem/chains";
+import lighthouse from "@lighthouse-web3/sdk";
+import axios from "axios";
 
 export interface DocumentQueryOptions {
   maxDocuments?: number;
@@ -36,6 +38,165 @@ export interface LocalDocumentIndexConfig {
   tokenizer?: Tokenizer;
   chunkingConfig?: Partial<TextSplitterConfig>;
 }
+
+const abi = [
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "indexName",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "uri",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "documentCID",
+        type: "string",
+      },
+    ],
+    name: "addDocument",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "indexName",
+        type: "string",
+      },
+    ],
+    name: "createIndex",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "indexId",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "uri",
+        type: "string",
+      },
+    ],
+    name: "getDocumentCIDByURI",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+    ],
+    name: "getOwnersIndexes",
+    outputs: [
+      {
+        internalType: "string[]",
+        name: "",
+        type: "string[]",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "indexId",
+        type: "string",
+      },
+      {
+        internalType: "string",
+        name: "uri",
+        type: "string",
+      },
+    ],
+    name: "getURIByDocumentCID",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    name: "indexes",
+    outputs: [
+      {
+        internalType: "uint256",
+        name: "version",
+        type: "uint256",
+      },
+      {
+        internalType: "uint256",
+        name: "count",
+        type: "uint256",
+      },
+      {
+        internalType: "address",
+        name: "owner",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+      {
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
+    ],
+    name: "owners",
+    outputs: [
+      {
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
+    ],
+    stateMutability: "view",
+    type: "function",
+  },
+];
 
 export class LocalDocumentIndex extends LocalIndex {
   private readonly _embeddings?: EmbeddingsModel;
@@ -76,9 +237,54 @@ export class LocalDocumentIndex extends LocalIndex {
 
   public async isCatalogCreated(): Promise<boolean> {
     try {
-      //TODO: we'll check this on smart ontract later
+      const localhostChain = defineChain({
+        ...localhost,
+        id: 749438201609197,
+        url: "http://localhost:8545",
+      });
+
+      const publicClient = createPublicClient({
+        chain: localhostChain,
+        transport: http(),
+      });
+
+      const data = await publicClient.readContract({
+        abi: [
+          {
+            inputs: [
+              {
+                internalType: "address",
+                name: "owner",
+                type: "address",
+              },
+            ],
+            name: "getOwnersIndexes",
+            outputs: [
+              {
+                internalType: "string[]",
+                name: "",
+                type: "string[]",
+              },
+            ],
+            stateMutability: "view",
+            type: "function",
+          },
+        ],
+        address: "0xeD3fda27A039FFCd66AcA14b82b86e17aFBc2Da2",
+        functionName: "getOwnersIndexes",
+        args: ["0xf2750684eB187fF9f82e2F980f6233707eF5768C"],
+      });
+
+      const exists = data.find((x: any) => x.toLowerCase() === this.indexName);
+      if (exists) {
+        return true;
+      }
 
       return true;
+      // else {
+      //   console.log("index not found");
+      //   return false;
+      // }
     } catch (err: unknown) {
       return false;
     }
@@ -94,8 +300,34 @@ export class LocalDocumentIndex extends LocalIndex {
     apiKey: string
   ): Promise<string | undefined> {
     await this.loadIndexData(apiKey);
-    //we'll get this from ipfs/smart contract
-    return "489a50e2-c4a7-47a9-80b1-de4602a73e18.txt";
+    //we'll get this from ipfs "489a50e2-c4a7-47a9-80b1-de4602a73e18.txt"
+    try {
+      const localhostChain = defineChain({
+        ...localhost,
+        id: 749438201609197,
+        url: "http://localhost:8545",
+      });
+
+      const publicClient = createPublicClient({
+        chain: localhostChain,
+        transport: http(),
+      });
+
+      const result: any = await publicClient.readContract({
+        address: "0xeD3fda27A039FFCd66AcA14b82b86e17aFBc2Da2",
+        abi: abi,
+        functionName: "getDocumentCIDByURI",
+        args: [this.indexName, uri],
+      });
+
+      return result;
+    } catch (e) {
+      console.log(e);
+      // QmcdMbcXG81U8VPN54gCc5yHZde78z9UsGDLng3BaXi4Ku
+      // return "https://en.wikipedia.org/wiki/2023_Cricket_World_Cup";
+    }
+
+    return this._catalog?.uriToId[uri];
   }
 
   /**
@@ -105,8 +337,31 @@ export class LocalDocumentIndex extends LocalIndex {
    */
   public async getDocumentUri(documentId: string): Promise<string | undefined> {
     await this.loadIndexData(this.apiKey);
-      //we'll get this from ipfs/smart contract
-    return "https://en.wikipedia.org/wiki/2023_Cricket_World_Cup";
+
+    try {
+      const localhostChain = defineChain({
+        ...localhost,
+        id: 749438201609197,
+        url: "http://localhost:8545",
+      });
+
+      const publicClient = createPublicClient({
+        chain: localhostChain,
+        transport: http(),
+      });
+
+      const result: any = await publicClient.readContract({
+        address: "0xeD3fda27A039FFCd66AcA14b82b86e17aFBc2Da2",
+        abi: abi,
+        functionName: "getURIByDocumentCID",
+        args: [this.indexName, documentId],
+      });
+
+      return result;
+    } catch (e) {
+      console.log(e);
+      // return "https://en.wikipedia.org/wiki/2023_Cricket_World_Cup";
+    }
   }
 
   /**
@@ -114,11 +369,10 @@ export class LocalDocumentIndex extends LocalIndex {
    * @returns Catalog stats.
    */
   public async getCatalogStats(): Promise<DocumentCatalogStats> {
-    // do it with smart contract later
     const stats = await this.getIndexStats(this.apiKey);
     return {
-      version: 1, // this._catalog!.version,
-      documents: 1, // this._catalog!.count,
+      version: this._catalog!.version,
+      documents: this._catalog!.count,
       chunks: stats.items,
       metadata_config: stats.metadata_config,
     };
@@ -199,10 +453,16 @@ export class LocalDocumentIndex extends LocalIndex {
     if (documentId != undefined) {
       // Delete existing document
       await this.deleteDocument(uri);
-    } else {
-      // Generate new document ID
-      documentId = v4();
-      //what we'll simple to is ignore and then use ipfs hash gotten after uploading document
+    }
+    //save it on ipfs first
+
+    const response = await lighthouse.uploadText(text, this.apiKey);
+
+    console.log(response);
+    documentId = response.data.Hash;
+
+    if (!documentId) {
+      throw new Error("failed to upload text to IPFS");
     }
 
     // Initialize text splitter settings
@@ -286,16 +546,10 @@ export class LocalDocumentIndex extends LocalIndex {
         );
       }
 
-      // Save metadata  to smart contract or lighthouse
-      if (metadata != undefined) {
-      }
-
-      // Save text file  smart contract or lighthouse
-
       // Add entry to catalog
-      // this._newCatalog!.uriToId[uri] = documentId;
-      // this._newCatalog!.idToUri[documentId] = uri;
-      // this._newCatalog!.count++;
+      this._newCatalog!.uriToId[uri] = documentId;
+      this._newCatalog!.idToUri[documentId] = uri;
+      this._newCatalog!.count++;
 
       // Commit changes
       await this.endUpdate();
@@ -443,9 +697,12 @@ export class LocalDocumentIndex extends LocalIndex {
     this._newCatalog = undefined;
   }
 
-  public async createIndex(config?: CreateIndexConfig): Promise<void> {
-    await super.createIndex(config);
+  public async createIndex(
+    config?: CreateIndexConfig
+  ): Promise<string | undefined> {
+    const newIndex = await super.createIndex(config);
     await this.loadIndexData(this.apiKey);
+    return newIndex;
   }
 
   public async endUpdate(): Promise<void> {
@@ -468,67 +725,33 @@ export class LocalDocumentIndex extends LocalIndex {
     if (this._catalog) {
       return;
     }
-
     //creating catalog on the smart contract
     if (await this.isCatalogCreated()) {
       // Load catalog from smart contract
-      //   this._catalog = ;
+      // const localhostChain = defineChain({
+      //   ...localhost,
+      //   id: 749438201609197,
+      //   url: "http://localhost:8545",
+      // });
+
+      // const publicClient = createPublicClient({
+      //   chain: localhostChain,
+      //   transport: http(),
+      // });
+
+      this._catalog = {
+        version: 1,
+        count: 0,
+        uriToId: {},
+        idToUri: {},
+      };
     } else {
-      try {
-        // Initialize catalog
-        this._catalog = {
-          version: 1,
-          count: 0,
-          uriToId: {},
-          idToUri: {},
-        };
-        //save catalog to smart contract
-        // await this.saveCatalogToSmartContract();
-      } catch (err: unknown) {
-        throw new Error(
-          `Error creating document catalog: ${(err as any).toString()}`
-        );
-      }
-    }
-  }
-
-  private async saveCatalogToSmartContract(
-    walletClient: WalletClient
-  ): Promise<void> {
-    // Define  localhost chain
-    const localhostChain = defineChain({
-      ...localhost,
-      id: 749438201609197,
-      url: "http://localhost:8545",
-    });
-
-    //  contract address and ABI
-    const contractAddress = "0xYOUR_CONTRACT_ADDRESS";
-    const contractABI: any[] = [];
-
-    const publicClient = createPublicClient({
-      chain: localhostChain,
-      transport: http(),
-    });
-
-    // Get the contract instance
-    const contract = getContract({
-      abi: contractABI,
-      address: contractAddress,
-      client: { public: publicClient, wallet: walletClient },
-    });
-
-    // Encode catalog data
-    const catalogData = JSON.stringify(this._catalog);
-
-    // Call the contract method to save the catalog data
-    try {
-      //@ts-ignore
-      const transaction = await contract.write.createIndex([catalogData]);
-      console.log("Catalog saved to smart contract", transaction);
-    } catch (error) {
-      console.error("Error saving catalog to smart contract:", error);
-      throw error;
+      this._catalog = {
+        version: 1,
+        count: 0,
+        uriToId: {},
+        idToUri: {},
+      };
     }
   }
 }
