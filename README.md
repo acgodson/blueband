@@ -1,13 +1,17 @@
 # BlueBand Vector-DB
 
-Welcome to BlueBand Vector-DB, a vectra-on-filecoin database for indexing and managing vector datasets easily.
+Welcome to BlueBand Vector-DB, a `vectra-on-filecoin` database for indexing and managing pinned datasets easily.
 
 ## IPC Subnet
 
-Catalog metadata are stored on solidity contract deployed on subnets, facilitating retrieval of IPNS Ids, CIDs and indexed URIs interchangely. Here are the details:
+Catalog metadata are stored on smart contracts deployed on subnets, facilitating retrieval of IPNS Ids, CIDs and indexed URIs interchangely. Here are the details:
 
-- Subnet ID: [Insert Subnet ID]
-- Contract Address: [Insert Contract Address]
+Certainly! Here's the information presented in a README table:
+
+|                   |                                                       |
+| ----------------- | ----------------------------------------------------- |
+| Subnet ID         | /r314159/t410fzwlpahfajqd663bnjiaduc5xjxcjgblkgvd6izy |
+| Blueband Contract | 0xeD3fda27A039FFCd66AcA14b82b86e17aFBc2Da2            |
 
 ## Lighthouse.Storage Integration
 
@@ -55,8 +59,8 @@ BlueBand-Client is a specialized application built on top of BlueBand, tailored 
 - **Blossom:** Design expert specializing in user interface and experience.
 - **Godson:** Developer with expertise in building scalable and reliable applications.
 
-
 References
+
 - [video]()
 - [Blueband Smart-contract]()
 - [IPC]()
