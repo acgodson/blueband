@@ -6,7 +6,7 @@ Welcome to BlueBand Vector-DB, a `vectra-on-filecoin` database for indexing and 
 
 ## IPC Subnet
 
-Catalog metadatsa are stored on smart contracts deployed on subnets, facilitating retrieval of IPNS Ids, CIDs and indexed URIs interchangely.
+Catalog metadatas are stored on smart contracts deployed on a local subnet, facilitating retrieval of IPNS Ids, CIDs and indexed URIs interchangeably.
 
 |                   |                                                       |
 | ----------------- | ----------------------------------------------------- |
@@ -19,14 +19,13 @@ Through integration with Lighthouse.Storage and IPNS, BlueBand leverages IPNS ID
 
 ## Subnet Deployment and set up
 
-1. [IPC Installation and  SubnetDeployment](https://docs.ipc.space/quickstarts/deploy-a-subnet)
+1. [IPC Installation and SubnetDeployment](https://docs.ipc.space/quickstarts/deploy-a-subnet)
 
 2. Connect [metamask](https://metamask.io/) to your IPC subnet, copy the blueband [contract](https://github.com/highfeast/blueband/blob/main/smart-contract/contracts/Blueband.sol) and deploy from [remix](https://remix.ethereum.org/)
 
 3. Replace new contract address in `.env`
 
 ## Local Testing
-
 
 To test BlueBand Vector-DB on local subnet, follow these steps:
 
@@ -47,7 +46,7 @@ To test BlueBand Vector-DB on local subnet, follow these steps:
 3. Configure Environment Variables:
 
    - Ensure IPC Subnet is running on docker. See [Instructuctions](https://docs.ipc.space/quickstarts/deploy-a-subnet)
-   - Add your ``IPC chainId``, [OpenAI api Key](https://platform.openai.com/usage) and [Lighthouse api Key](https://files.lighthouse.storage/dashboard/apikey) value to the `.env` file in node-test.
+   - Add your `IPC chainId`, [OpenAI api Key](https://platform.openai.com/usage) and [Lighthouse api Key](https://files.lighthouse.storage/dashboard/apikey) value to the `.env` file in node-test.
 
 4. Run Tests:
    ```bash
