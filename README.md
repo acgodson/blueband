@@ -17,9 +17,9 @@ Catalog metadatas are stored on smart contracts deployed on a local subnet, faci
 
 Through integration with Lighthouse.Storage and IPNS, BlueBand leverages IPNS IDs as the index IDs and pointers to the stored datasets. Even with changes in Content ID (CID) due to document upserts or removals, the IPNS pointer remains constant.
 
-## Subnet Deployment and set up
+## Subnet  Set-up and Deployment
 
-1. [IPC Installation and SubnetDeployment](https://docs.ipc.space/quickstarts/deploy-a-subnet)
+1. [IPC Installation and Subnet Deployment](https://docs.ipc.space/quickstarts/deploy-a-subnet)
 
 2. Connect [metamask](https://metamask.io/) to your IPC subnet, copy the blueband [contract](https://github.com/highfeast/blueband/blob/main/smart-contract/contracts/Blueband.sol) and deploy from [remix](https://remix.ethereum.org/)
 
