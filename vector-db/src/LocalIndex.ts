@@ -1,5 +1,3 @@
-import * as fs from "fs/promises";
-import * as path from "path";
 import { v4 } from "uuid";
 import { ItemSelector } from "./ItemSelector";
 import lighthouse from "@lighthouse-web3/sdk";
@@ -12,7 +10,6 @@ import {
   MetadataTypes,
   QueryResult,
 } from "./types";
-import { config } from "yargs";
 import { WalletClient } from "viem";
 
 export interface CreateIndexConfig {

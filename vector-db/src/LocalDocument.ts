@@ -1,5 +1,3 @@
-import * as fs from "fs/promises";
-import * as path from "path";
 import { MetadataTypes } from "./types";
 import { LocalDocumentIndex } from "./LocalDocumentIndex";
 import { createPublicClient, defineChain, http } from "viem";
@@ -7,7 +5,6 @@ import { localhost } from "viem/chains";
 import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
-
 
 const chianId = process.env.CHAIN_ID;
 const BluebandAddress = process.env.BLUEBAND_CONTRACT;
@@ -172,7 +169,7 @@ const abi = [
 ];
 
 /**
- * Represents an indexed document stored on disk.
+ * Represents an indexed document stored on filecoin.
  */
 export class LocalDocument {
   private readonly _index: LocalDocumentIndex;
@@ -181,38 +178,20 @@ export class LocalDocument {
   private _metadata: Record<string, MetadataTypes> | undefined;
   private _text: string | undefined;
 
-  /**
-   * Creates a new `LocalDocument` instance.
-   * @param index Parent index that contains the document.
-   * @param id ID of the document.
-   * @param uri URI of the document.
-   */
   public constructor(index: LocalDocumentIndex, id: string, uri: string) {
     this._index = index;
     this._id = id;
     this._uri = uri;
   }
 
-  /**
-   * Returns the ID of the document.
-   */
   public get id(): string {
     return this._id;
   }
 
-  /**
-   * Returns the URI of the document.
-   */
   public get uri(): string {
     return this._uri;
   }
 
-  /**
-   * Returns the length of the document in tokens.
-   * @remarks
-   * This value will be estimated for documents longer then 40k bytes.
-   * @returns Length of the document in tokens.
-   */
   public async getLength(): Promise<number> {
     const text = await this.loadText();
     if (text.length <= 40000) {

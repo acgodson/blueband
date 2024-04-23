@@ -2,7 +2,6 @@ node-test/node_modules
 node-test/.nyc_output
 node-test/.env
 
-wikipedia/vectra.json
 
 vector-db/lib
 vector-db/node_modules
@@ -11,3 +10,9 @@ yarn.lock
 node-test/.DS_Store
 node-test/pnpm-lock.yaml
 vector-db/tsconfig.tsbuildinfo
+node-test/.DS_Store
+vector-db/lib2
+vector-db/dist
+.DS_Store
+node-test/.DS_Store
+vector-db/.DS_Store

@@ -27,7 +27,6 @@ export async function createIndex(apiKey: string, client: WalletClient) {
 export async function addDocuments(
   indexName: string,
   apiKey: string,
-  keys: string,
   uris: string[],
   chunkSize: number
 ) {
@@ -78,7 +77,6 @@ export async function queryIndex(
   indexName: string,
   apiKey: string,
   query: string,
-  keys: string,
   documentCount: number,
   chunkCount: number,
   sectionCount: number,
@@ -148,13 +146,3 @@ export async function removeDocuments(
 ) {}
 
 export async function getIndexStats(index: string, apiKey: string) {}
-
-// const deleteAllLightHouseIndex = async (apiKey: string) => {
-//   const allKeys = await lighthouse.getAllKeys(apiKey);
-//   const data = allKeys.data;
-//   for (let i = 0; i < data.length; i++) {
-//     const element = data[i];
-//     const removeRes = await lighthouse.removeKey(element.ipnsName, apiKey);
-//     console.log(removeRes.data);
-//   }
-// };

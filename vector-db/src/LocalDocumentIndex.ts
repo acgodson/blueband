@@ -212,10 +212,7 @@ export class LocalDocumentIndex extends LocalIndex {
   private _catalog?: DocumentCatalog;
   private _newCatalog?: DocumentCatalog;
 
-  /**
-   * Creates a new `LocalDocumentIndex` instance.
-   * @param config Configuration settings for the document index.
-   */
+
   public constructor(config: LocalDocumentIndexConfig) {
     super(config.indexName);
     this._embeddings = config.embeddings;
@@ -296,11 +293,7 @@ export class LocalDocumentIndex extends LocalIndex {
     }
   }
 
-  /**
-   * Returns the document ID for the given URI.
-   * @param uri URI of the document to lookup.
-   * @returns Document ID or undefined if not found.
-   */
+ 
   public async getDocumentId(
     uri: string,
     apiKey: string
@@ -336,11 +329,7 @@ export class LocalDocumentIndex extends LocalIndex {
     return this._catalog?.uriToId[uri];
   }
 
-  /**
-   * Returns the document URI for the given ID.
-   * @param documentId ID of the document to lookup.
-   * @returns Document URI or undefined if not found.
-   */
+ 
   public async getDocumentUri(documentId: string): Promise<string | undefined> {
     await this.loadIndexData(this.apiKey);
 
@@ -370,10 +359,7 @@ export class LocalDocumentIndex extends LocalIndex {
     }
   }
 
-  /**
-   * Loads the document catalog from disk and returns its stats.
-   * @returns Catalog stats.
-   */
+ 
   public async getCatalogStats(): Promise<DocumentCatalogStats> {
     const stats = await this.getIndexStats(this.apiKey);
     return {
@@ -384,10 +370,7 @@ export class LocalDocumentIndex extends LocalIndex {
     };
   }
 
-  /**
-   * Deletes a document from the index.
-   * @param uri URI of the document to delete.
-   */
+
   public async deleteDocument(uri: string): Promise<void> {
     // Lookup document ID
     const documentId = await this.getDocumentId(uri, this.apiKey);
@@ -410,7 +393,6 @@ export class LocalDocumentIndex extends LocalIndex {
       for (const chunk of chunks) {
         await this.deleteItem(chunk.id, this.apiKey);
       }
-
       // Remove entry from catalog
       delete this._newCatalog!.uriToId[uri];
       delete this._newCatalog!.idToUri[documentId];
@@ -425,23 +407,9 @@ export class LocalDocumentIndex extends LocalIndex {
         `Error deleting document "${uri}": ${(err as any).toString()}`
       );
     }
-
-    // Delete text file from smart contract
-
-    // Delete metadata file from metadata
   }
 
-  /**
-   * Adds a document to the catalog.
-   * @remarks
-   * A new update is started if one is not already in progress. If an document with the same uri
-   * already exists, it will be replaced.
-   * @param uri - Document URI
-   * @param text - Document text
-   * @param docType - Optional. Document type
-   * @param metadata - Optional. Document metadata to index
-   * @returns Inserted document
-   */
+
   public async upsertDocument(
     uri: string,
     text: string,
@@ -571,12 +539,7 @@ export class LocalDocumentIndex extends LocalIndex {
     return new LocalDocument(this, documentId, uri);
   }
 
-  /**
-   * Returns all documents in the index.
-   * @remarks
-   * Each document will contain all of the documents indexed chunks.
-   * @returns Array of documents.
-   */
+
   public async listDocuments(): Promise<LocalDocumentResult[]> {
     // Sort chunks by document ID
     const docs: { [documentId: string]: QueryResult<DocumentChunkMetadata>[] } =
@@ -607,12 +570,7 @@ export class LocalDocumentIndex extends LocalIndex {
     return results;
   }
 
-  /**
-   * Queries the index for documents similar to the given query.
-   * @param query Text to query for.
-   * @param options Optional. Query options.
-   * @returns Array of document results.
-   */
+
   public async queryDocuments(
     query: string,
     options?: DocumentQueryOptions
@@ -691,7 +649,7 @@ export class LocalDocumentIndex extends LocalIndex {
       .slice(0, options.maxDocuments!);
   }
 
-  // Overrides
+
 
   public async beginUpdate(): Promise<void> {
     await super.beginUpdate(this.apiKey);
@@ -733,17 +691,7 @@ export class LocalDocumentIndex extends LocalIndex {
     }
     //creating catalog on the smart contract
     if (await this.isCatalogCreated()) {
-      // Load catalog from smart contract
-      // const localhostChain = defineChain({
-      //   ...localhost,
-      //   id: parseInt(chianId || "0"),
-      //   url: "http://localhost:8545",
-      // });
-
-      // const publicClient = createPublicClient({
-      //   chain: localhostChain,
-      //   transport: http(),
-      // });
+      // TODO: Load catalog update from smart contract
 
       this._catalog = {
         version: 1,

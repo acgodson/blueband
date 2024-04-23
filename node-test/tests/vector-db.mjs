@@ -10,6 +10,7 @@ import {
 import { privateKeyToAccount } from "viem/accounts";
 import { localhost } from "viem/chains";
 import dotenv from "dotenv";
+
 dotenv.config();
 
 const chianId = process.env.CHAIN_ID;
@@ -23,12 +24,7 @@ const localhostChain = defineChain({
   url: "http://localhost:8545",
 });
 
-const callWriteContract = async (
-  walletClient,
-  abi,
-  functionName,
-  args
-) => {
+const callWriteContract = async (walletClient, abi, functionName, args) => {
   // define  IPC chain
   const localhostChain = defineChain({
     ...localhost,
@@ -69,7 +65,7 @@ describe("Blueband Vector-db", function () {
     abi = JSON.parse(json).abi;
   });
 
-  describe("createIndex", function () {
+  describe("createIndex", async function () {
     it("should create an empty index", async function () {
       const result = await createIndex(apiKey, client);
       if (result) {
@@ -80,12 +76,9 @@ describe("Blueband Vector-db", function () {
     it("should save index catalog on IPC subnet", async function () {
       // const accounts = await client.getAddresses();
       // const account = accounts[0];
-      const transaction = await callWriteContract(
-        client,
-        abi,
-        "createIndex",
-        [indexName]
-      );
+      const transaction = await callWriteContract(client, abi, "createIndex", [
+        indexName,
+      ]);
       console.log("transaction successful:", transaction);
     }).timeout(25000);
 
@@ -115,9 +108,8 @@ describe("Blueband Vector-db", function () {
     }).timeout(25000);
   });
 
-  describe("addDocument", function () {
+  describe("addDocument", async function () {
     it("should upsert new documents and save catalog on subnet", async function () {
-      const keys = "docs/wikipedia/vectra.json";
       const listFilePath = "docs/wikipedia/wikipedia.txt";
       const chunkSize = 512;
       const uris = fs.readFileSync(listFilePath, "utf-8");
@@ -129,7 +121,6 @@ describe("Blueband Vector-db", function () {
         const catalogResult = await addDocuments(
           indexName,
           apiKey,
-          keys,
           uriList,
           chunkSize
         );
@@ -161,9 +152,8 @@ describe("Blueband Vector-db", function () {
     }).timeout(120000);
   });
 
-  describe("queryIndex", function () {
+  describe("queryIndex", async function () {
     it("should return relevant documents for a given query", async function () {
-      const keys = "docs/wikipedia/vectra.json";
       const query = "what sports is this about?";
       const documentCount = 10;
       const chunkCount = 200;
@@ -178,7 +168,6 @@ describe("Blueband Vector-db", function () {
           indexName,
           apiKey,
           query,
-          keys,
           documentCount,
           chunkCount,
           sectionCount,

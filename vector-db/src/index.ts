@@ -1,4 +1,3 @@
-export * from './FileFetcher';
 export * from './GPT3Tokenizer';
 export * from './ItemSelector';
 export * from './LocalIndex';
@@ -9,4 +8,4 @@ export * from './OpenAIEmbeddings';
 export * from './TextSplitter';
 export * from './types';
 export * from './WebFetcher';
-export * from './vectra-cli';
+export * from './vector-db';

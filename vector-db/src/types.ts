@@ -1,8 +1,6 @@
 
 
-/**
- * An AI model that can be used to create embeddings.
- */
+
 export interface EmbeddingsModel {
     /**
      * Maximum number of tokens
@@ -17,18 +15,10 @@ export interface EmbeddingsModel {
     createEmbeddings(inputs: string|string[]): Promise<EmbeddingsResponse>;
 }
 
-/**
- * Status of the embeddings response.
- * @remarks
- * `success` - The embeddings were successfully created.
- * `error` - An error occurred while creating the embeddings.
- * `rate_limited` - The request was rate limited.
- */
+
 export type EmbeddingsResponseStatus = 'success' | 'error' | 'rate_limited';
 
-/**
- * Response returned by a `EmbeddingsClient`.
- */
+
 export interface EmbeddingsResponse {
     /**
      * Status of the embeddings response.

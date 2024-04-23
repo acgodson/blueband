@@ -139,7 +139,7 @@ function convertTables(turndownService: TurndownService): void {
                 for (var i = 0; i < node.childNodes.length; i++) {
                     var border = '---'
                     var align: string = (
-                        node.childNodes[i].getAttribute('align') || ''
+                       ( node.childNodes[i] as any).getAttribute('align') || ''
                     ).toLowerCase()
 
                     if (align) border = alignMap[align] || border
