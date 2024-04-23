@@ -17,9 +17,18 @@ Catalog metadatsa are stored on smart contracts deployed on subnets, facilitatin
 
 Through integration with Lighthouse.Storage and IPNS, BlueBand leverages IPNS IDs as the index IDs and pointers to the stored datasets. Even with changes in Content ID (CID) due to document upserts or removals, the IPNS pointer remains constant.
 
+## Subnet Deployment and set up
+
+1. [IPC Installation and  SubnetDeployment](https://docs.ipc.space/quickstarts/deploy-a-subnet)
+
+2. Connect [metamask](https://metamask.io/) to your IPC subnet, copy the blueband [contract](https://github.com/highfeast/blueband/blob/main/smart-contract/contracts/Blueband.sol) and deploy from [remix](https://remix.ethereum.org/)
+
+3. Replace new contract address in `.env`
+
 ## Local Testing
 
-To locally test BlueBand Vector-DB, follow these steps:
+
+To test BlueBand Vector-DB on local subnet, follow these steps:
 
 1. Prepare Repository:
 
@@ -37,8 +46,8 @@ To locally test BlueBand Vector-DB, follow these steps:
 
 3. Configure Environment Variables:
 
-   - Ensure that IPC Subnet is running locally. See [Instructuctions]()
-   - Add your [IPC chainId](), [OpenAI Keys]() and [Lighthous Keyse]() value to the `.env` file in node-test.
+   - Ensure IPC Subnet is running on docker. See [Instructuctions](https://docs.ipc.space/quickstarts/deploy-a-subnet)
+   - Add your ``IPC chainId``, [OpenAI api Key](https://platform.openai.com/usage) and [Lighthouse api Key](https://files.lighthouse.storage/dashboard/apikey) value to the `.env` file in node-test.
 
 4. Run Tests:
    ```bash
@@ -61,8 +70,8 @@ BlueBand-Client is a specialized application built on top of BlueBand, tailored 
 
 References
 
-- [video]()
-- [Blueband Smart-contract]()
-- [IPC]()
-- [Lighthouse.storage]()
-- [Vectra local database]()
+- [video](https://vimeo.com/manage/videos/937456306)
+- [Blueband Smart-contract](https://github.com/highfeast/blueband/blob/main/smart-contract/contracts/Blueband.sol)
+- [IPC](https://docs.ipc.space/)
+- [Lighthouse.storage](https://docs.lighthouse.storage/lighthouse-1)
+- [Vectra local database](https://github.com/Stevenic/vectra/blob/main/bin/vectra.js)
