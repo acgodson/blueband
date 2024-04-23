@@ -29,6 +29,7 @@ dotenv.config();
 
 
 const chianId = process.env.CHAIN_ID;
+const BluebandAddress = process.env.BLUEBAND_CONTRACT;
 
 export interface DocumentQueryOptions {
   maxDocuments?: number;
@@ -275,7 +276,7 @@ export class LocalDocumentIndex extends LocalIndex {
             type: "function",
           },
         ],
-        address: "0xeD3fda27A039FFCd66AcA14b82b86e17aFBc2Da2",
+        address:  BluebandAddress as `0x${string}`,
         functionName: "getOwnersIndexes",
         args: ["0xf2750684eB187fF9f82e2F980f6233707eF5768C"],
       });
@@ -319,7 +320,7 @@ export class LocalDocumentIndex extends LocalIndex {
       });
 
       const result: any = await publicClient.readContract({
-        address: "0xeD3fda27A039FFCd66AcA14b82b86e17aFBc2Da2",
+        address: BluebandAddress as `0x${string}`,
         abi: abi,
         functionName: "getDocumentCIDByURI",
         args: [this.indexName, uri],
@@ -356,7 +357,7 @@ export class LocalDocumentIndex extends LocalIndex {
       });
 
       const result: any = await publicClient.readContract({
-        address: "0xeD3fda27A039FFCd66AcA14b82b86e17aFBc2Da2",
+        address: BluebandAddress as `0x${string}`,
         abi: abi,
         functionName: "getURIByDocumentCID",
         args: [this.indexName, documentId],

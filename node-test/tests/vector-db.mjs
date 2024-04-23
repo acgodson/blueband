@@ -1,5 +1,5 @@
 import fs from "fs";
-import { createIndex, addDocuments, queryIndex } from "vectra";
+import { createIndex, addDocuments, queryIndex } from "vector-db";
 import {
   defineChain,
   getContract,
@@ -15,6 +15,7 @@ dotenv.config();
 const chianId = process.env.CHAIN_ID;
 const privateKey = process.env.PRIVATE_KEY;
 const apiKey = process.env.LIGHTHOUSE_API_KEY;
+const BluebandAddress = process.env.BLUEBAND_CONTRACT;
 
 const localhostChain = defineChain({
   ...localhost,
@@ -24,8 +25,6 @@ const localhostChain = defineChain({
 
 const callWriteContract = async (
   walletClient,
-  contractAddress,
-  account,
   abi,
   functionName,
   args
@@ -40,7 +39,7 @@ const callWriteContract = async (
   try {
     const transaction = await walletClient.writeContract({
       abi,
-      address: contractAddress,
+      address: BluebandAddress,
       functionName,
       args,
       account: privateKeyToAccount(privateKey),
@@ -79,13 +78,10 @@ describe("Blueband Vector-db", function () {
     }).timeout(25000);
 
     it("should save index catalog on IPC subnet", async function () {
-      const accounts = await client.getAddresses();
-      const account = accounts[0];
-      const contractAddress = "0xeD3fda27A039FFCd66AcA14b82b86e17aFBc2Da2";
+      // const accounts = await client.getAddresses();
+      // const account = accounts[0];
       const transaction = await callWriteContract(
         client,
-        contractAddress,
-        account,
         abi,
         "createIndex",
         [indexName]
@@ -108,7 +104,7 @@ describe("Blueband Vector-db", function () {
       const accounts = await client.getAddresses();
       const account = accounts[0];
       const data = await publicClient.readContract({
-        address: "0xeD3fda27A039FFCd66AcA14b82b86e17aFBc2Da2",
+        address: BluebandAddress,
         abi: abi,
         functionName: "getOwnersIndexes",
         args: [account],
@@ -144,7 +140,7 @@ describe("Blueband Vector-db", function () {
             try {
               const transaction = await client.writeContract({
                 abi,
-                address: "0xeD3fda27A039FFCd66AcA14b82b86e17aFBc2Da2",
+                address: BluebandAddress,
                 functionName: "addDocument",
                 args: [indexName, catalog.uris[i], catalog.ids[i]],
                 account: privateKeyToAccount(privateKey),
@@ -166,7 +162,6 @@ describe("Blueband Vector-db", function () {
   });
 
   describe("queryIndex", function () {
-
     it("should return relevant documents for a given query", async function () {
       const keys = "docs/wikipedia/vectra.json";
       const query = "what sports is this about?";

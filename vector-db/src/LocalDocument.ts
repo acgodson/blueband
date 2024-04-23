@@ -10,6 +10,7 @@ dotenv.config();
 
 
 const chianId = process.env.CHAIN_ID;
+const BluebandAddress = process.env.BLUEBAND_CONTRACT;
 
 const abi = [
   {
@@ -269,7 +270,7 @@ export class LocalDocument {
           transport: http(),
         });
         const result = await publicClient.readContract({
-          address: "0xeD3fda27A039FFCd66AcA14b82b86e17aFBc2Da2",
+          address: BluebandAddress as `0x${string}`,
           abi: abi,
           functionName: "getDocumentCIDByURI",
           args: [this._index.indexName, this._uri],
