@@ -19,6 +19,8 @@ Through integration with Lighthouse.Storage and IPNS, BlueBand leverages IPNS ID
 
 ## Subnet  Set-up and Deployment
 
+![alt text](<examples/chat-health/public/Screenshot 2024-04-23 at 22.28.25.png>)
+
 1. [IPC Installation and Subnet Deployment](https://docs.ipc.space/quickstarts/deploy-a-subnet)
 
 2. Connect [metamask](https://metamask.io/) to your IPC subnet, copy the blueband [contract](https://github.com/highfeast/blueband/blob/main/smart-contract/contracts/Blueband.sol) and deploy from [remix](https://remix.ethereum.org/)
@@ -59,7 +61,12 @@ BlueBand-Client is a specialized application built on top of BlueBand, tailored 
 
 **Description:** BlueBand-Client streamlines the process of organizing and accessing health information. It leverages the power of BlueBand's vector database to provide quick and accurate indexing of health-related data.
 
-[Demo](https://vimeo.com/manage/videos/937456306)
+![screenshot](<examples/chat-health/public/Screenshot 2024-04-23 at 14.15.16.png>)
+
+
+- [Demo](https://vimeo.com/manage/videos/937456306)
+- [example-client](https://github.com/highfeast/blueband/tree/main/examples/chat-health)
+
 
 **Contributors:**
 
