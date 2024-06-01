@@ -181,10 +181,7 @@ export class LocalIndex {
 
       // Step 3: Handle successful publication
       if (publishResponse.data.Value) {
-        console.log(
-          "Index successfully published to IPNS:",
-          publishResponse.data
-        );
+        console.log("Index updated on IPNS:", publishResponse.data);
         this._data = this._update;
         this._update = undefined;
       } else {
@@ -424,7 +421,7 @@ export class LocalIndex {
       return;
     }
 
-    console.log(this._indexName, this._data?.ipnsId);
+    // console.log(this._indexName, this._data?.ipnsId);
 
     if (
       !(await this.isIndexCreated(

@@ -1,172 +1,8 @@
 import { MetadataTypes } from "./types";
 import { LocalDocumentIndex } from "./LocalDocumentIndex";
-import { createPublicClient, defineChain, http } from "viem";
-import { localhost } from "viem/chains";
 import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
-
-const chianId = process.env.CHAIN_ID;
-const BluebandAddress = process.env.BLUEBAND_CONTRACT;
-
-const abi = [
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "indexName",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "uri",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "documentCID",
-        type: "string",
-      },
-    ],
-    name: "addDocument",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "indexName",
-        type: "string",
-      },
-    ],
-    name: "createIndex",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "indexId",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "uri",
-        type: "string",
-      },
-    ],
-    name: "getDocumentCIDByURI",
-    outputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-    ],
-    name: "getOwnersIndexes",
-    outputs: [
-      {
-        internalType: "string[]",
-        name: "",
-        type: "string[]",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "indexId",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "uri",
-        type: "string",
-      },
-    ],
-    name: "getURIByDocumentCID",
-    outputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string",
-      },
-    ],
-    name: "indexes",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "version",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "count",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    name: "owners",
-    outputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-];
 
 /**
  * Represents an indexed document stored on filecoin.
@@ -239,21 +75,11 @@ export class LocalDocument {
   public async loadText(): Promise<string> {
     if (this._text == undefined) {
       try {
-        const localhostChain = defineChain({
-          ...localhost,
-          id: parseInt(chianId || "0"),
-          url: "http://localhost:8545",
-        });
-        const publicClient = createPublicClient({
-          chain: localhostChain,
-          transport: http(),
-        });
-        const result = await publicClient.readContract({
-          address: BluebandAddress as `0x${string}`,
-          abi: abi,
-          functionName: "getDocumentCIDByURI",
-          args: [this._index.indexName, this._uri],
-        });
+        const result = await this._index.getDocumentId(
+          this._uri,
+          this._index.lightHouseKey
+        );
+
         const response = await axios.get(
           `https://gateway.lighthouse.storage/ipfs/${result}`
         );

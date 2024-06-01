@@ -14,22 +14,9 @@ import {
 } from "./types";
 import { LocalDocumentResult } from "./LocalDocumentResult";
 import { LocalDocument } from "./LocalDocument";
-import {
-  defineChain,
-  getContract,
-  createPublicClient,
-  http,
-  WalletClient,
-} from "viem";
-import { localhost } from "viem/chains";
 import lighthouse from "@lighthouse-web3/sdk";
-import axios from "axios";
 import dotenv from "dotenv";
 dotenv.config();
-
-
-const chianId = process.env.CHAIN_ID;
-const BluebandAddress = process.env.BLUEBAND_CONTRACT;
 
 export interface DocumentQueryOptions {
   maxDocuments?: number;
@@ -40,178 +27,30 @@ export interface DocumentQueryOptions {
 export interface LocalDocumentIndexConfig {
   indexName?: string;
   apiKey: string;
+  agent?: string;
+  isCatalog?: boolean;
+  _getDocumentId?: (documentUri: string) => Promise<string | undefined>;
+  _getDoumentUri?: (documentId: string) => Promise<string | undefined>;
   embeddings?: EmbeddingsModel;
   tokenizer?: Tokenizer;
   chunkingConfig?: Partial<TextSplitterConfig>;
 }
 
-const abi = [
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "indexName",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "uri",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "documentCID",
-        type: "string",
-      },
-    ],
-    name: "addDocument",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "indexName",
-        type: "string",
-      },
-    ],
-    name: "createIndex",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "indexId",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "uri",
-        type: "string",
-      },
-    ],
-    name: "getDocumentCIDByURI",
-    outputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-    ],
-    name: "getOwnersIndexes",
-    outputs: [
-      {
-        internalType: "string[]",
-        name: "",
-        type: "string[]",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "indexId",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "uri",
-        type: "string",
-      },
-    ],
-    name: "getURIByDocumentCID",
-    outputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string",
-      },
-    ],
-    name: "indexes",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "version",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "count",
-        type: "uint256",
-      },
-      {
-        internalType: "address",
-        name: "owner",
-        type: "address",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "",
-        type: "address",
-      },
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    name: "owners",
-    outputs: [
-      {
-        internalType: "string",
-        name: "",
-        type: "string",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-];
-
 export class LocalDocumentIndex extends LocalIndex {
   private readonly _embeddings?: EmbeddingsModel;
   private readonly _tokenizer: Tokenizer;
   private readonly apiKey: string;
+  private readonly isCatalog?: boolean;
+  private readonly _getDocumentId?: (
+    documentUri: string
+  ) => Promise<string | undefined>;
+  private readonly _getDoumentUri?: (
+    documentId: string
+  ) => Promise<string | undefined>;
+  private readonly agent?: string;
   private readonly _chunkingConfig?: TextSplitterConfig;
   private _catalog?: DocumentCatalog;
   private _newCatalog?: DocumentCatalog;
-
 
   public constructor(config: LocalDocumentIndexConfig) {
     super(config.indexName);
@@ -228,10 +67,20 @@ export class LocalDocumentIndex extends LocalIndex {
       config.tokenizer ?? this._chunkingConfig.tokenizer ?? new GPT3Tokenizer();
     this._chunkingConfig.tokenizer = this._tokenizer;
     this.apiKey = config.apiKey;
+    if (config.agent) {
+      this.agent = config.agent;
+    }
+    this.isCatalog = config.isCatalog;
+    this._getDocumentId = config._getDocumentId;
+    this._getDoumentUri = config._getDoumentUri;
   }
 
   public get embeddings(): EmbeddingsModel | undefined {
     return this._embeddings;
+  }
+
+  public get lightHouseKey(): string {
+    return this.apiKey;
   }
 
   public get tokenizer(): Tokenizer {
@@ -239,127 +88,31 @@ export class LocalDocumentIndex extends LocalIndex {
   }
 
   public async isCatalogCreated(): Promise<boolean> {
-    try {
-      const localhostChain = defineChain({
-        ...localhost,
-        id: parseInt(chianId || "0"),
-        url: "http://localhost:8545",
-      });
-
-      const publicClient = createPublicClient({
-        chain: localhostChain,
-        transport: http(),
-      });
-
-      const data = await publicClient.readContract({
-        abi: [
-          {
-            inputs: [
-              {
-                internalType: "address",
-                name: "owner",
-                type: "address",
-              },
-            ],
-            name: "getOwnersIndexes",
-            outputs: [
-              {
-                internalType: "string[]",
-                name: "",
-                type: "string[]",
-              },
-            ],
-            stateMutability: "view",
-            type: "function",
-          },
-        ],
-        address:  BluebandAddress as `0x${string}`,
-        functionName: "getOwnersIndexes",
-        args: ["0xf2750684eB187fF9f82e2F980f6233707eF5768C"],
-      });
-
-      const exists = data.find((x: any) => x.toLowerCase() === this.indexName);
-      if (exists) {
-        return true;
-      }
-
-      return true;
-      // else {
-      //   console.log("index not found");
-      //   return false;
-      // }
-    } catch (err: unknown) {
-      return false;
-    }
+    return this.isCatalog ?? false;
   }
 
- 
   public async getDocumentId(
     uri: string,
     apiKey: string
   ): Promise<string | undefined> {
     await this.loadIndexData(apiKey);
-    //we'll get this from ipfs "489a50e2-c4a7-47a9-80b1-de4602a73e18.txt"
-    try {
-      const localhostChain = defineChain({
-        ...localhost,
-        id: parseInt(chianId || "0"),
-        url: "http://localhost:8545",
-      });
 
-      const publicClient = createPublicClient({
-        chain: localhostChain,
-        transport: http(),
-      });
-
-      const result: any = await publicClient.readContract({
-        address: BluebandAddress as `0x${string}`,
-        abi: abi,
-        functionName: "getDocumentCIDByURI",
-        args: [this.indexName, uri],
-      });
-
-      return result;
-    } catch (e) {
-      console.log(e);
-      // QmcdMbcXG81U8VPN54gCc5yHZde78z9UsGDLng3BaXi4Ku
-      // return "https://en.wikipedia.org/wiki/2023_Cricket_World_Cup";
-    }
-
-    return this._catalog?.uriToId[uri];
+    const x = this._getDocumentId ? await this._getDocumentId(uri) : undefined;
+    return x;
   }
 
- 
-  public async getDocumentUri(documentId: string): Promise<string | undefined> {
-    await this.loadIndexData(this.apiKey);
+  public async getDocumentUri(
+    documentId: string,
+    apiKey: string
+  ): Promise<string | undefined> {
+    await this.loadIndexData(apiKey);
 
-    try {
-      const localhostChain = defineChain({
-        ...localhost,
-        id: parseInt(chianId || "0"),
-        url: "http://localhost:8545",
-      });
-
-      const publicClient = createPublicClient({
-        chain: localhostChain,
-        transport: http(),
-      });
-
-      const result: any = await publicClient.readContract({
-        address: BluebandAddress as `0x${string}`,
-        abi: abi,
-        functionName: "getURIByDocumentCID",
-        args: [this.indexName, documentId],
-      });
-
-      return result;
-    } catch (e) {
-      console.log(e);
-      // return "https://en.wikipedia.org/wiki/2023_Cricket_World_Cup";
-    }
+    const x = this._getDoumentUri
+      ? await this._getDoumentUri(documentId)
+      : undefined;
+    return x;
   }
 
- 
   public async getCatalogStats(): Promise<DocumentCatalogStats> {
     const stats = await this.getIndexStats(this.apiKey);
     return {
@@ -369,7 +122,6 @@ export class LocalDocumentIndex extends LocalIndex {
       metadata_config: stats.metadata_config,
     };
   }
-
 
   public async deleteDocument(uri: string): Promise<void> {
     // Lookup document ID
@@ -409,7 +161,6 @@ export class LocalDocumentIndex extends LocalIndex {
     }
   }
 
-
   public async upsertDocument(
     uri: string,
     text: string,
@@ -432,7 +183,7 @@ export class LocalDocumentIndex extends LocalIndex {
 
     const response = await lighthouse.uploadText(text, this.apiKey);
 
-    console.log(response);
+    // console.log(response);
     documentId = response.data.Hash;
 
     if (!documentId) {
@@ -539,7 +290,6 @@ export class LocalDocumentIndex extends LocalIndex {
     return new LocalDocument(this, documentId, uri);
   }
 
-
   public async listDocuments(): Promise<LocalDocumentResult[]> {
     // Sort chunks by document ID
     const docs: { [documentId: string]: QueryResult<DocumentChunkMetadata>[] } =
@@ -547,7 +297,11 @@ export class LocalDocumentIndex extends LocalIndex {
     const chunks = await this.listItems<DocumentChunkMetadata>(this.apiKey);
     chunks.forEach((chunk) => {
       const metadata = chunk.metadata;
-      if (docs[metadata.documentId] == undefined) {
+      //TODO: verify this
+      if (
+        docs[metadata.documentId] == undefined ||
+        docs[metadata.documentId].length < 1
+      ) {
         docs[metadata.documentId] = [];
       }
       docs[metadata.documentId].push({ item: chunk, score: 1.0 });
@@ -556,11 +310,11 @@ export class LocalDocumentIndex extends LocalIndex {
     // Create document results
     const results: LocalDocumentResult[] = [];
     for (const documentId in docs) {
-      const uri = (await this.getDocumentUri(documentId)) as string;
+      const uri = await this.getDocumentUri(documentId, this.apiKey);
       const documentResult = new LocalDocumentResult(
         this,
         documentId,
-        uri,
+        uri!,
         docs[documentId],
         this._tokenizer
       );
@@ -569,7 +323,6 @@ export class LocalDocumentIndex extends LocalIndex {
 
     return results;
   }
-
 
   public async queryDocuments(
     query: string,
@@ -630,17 +383,23 @@ export class LocalDocumentIndex extends LocalIndex {
 
     // Create a document result for each document
     const documentResults: LocalDocumentResult[] = [];
+
+    // console.log("document result", documentChunks);
+
     for (const documentId in documentChunks) {
       const chunks = documentChunks[documentId];
-      const uri = (await this.getDocumentUri(documentId)) as string;
-      const documentResult = new LocalDocumentResult(
-        this,
-        documentId,
-        uri,
-        chunks,
-        this._tokenizer
-      );
-      documentResults.push(documentResult);
+      // console.log("new chunks", documentId);
+      if (documentId) {
+        const uri = await this.getDocumentUri(documentId, this.apiKey);
+        const documentResult = new LocalDocumentResult(
+          this,
+          documentId,
+          uri!,
+          chunks,
+          this._tokenizer
+        );
+        documentResults.push(documentResult);
+      }
     }
 
     // Sort document results by score and return top results
@@ -648,8 +407,6 @@ export class LocalDocumentIndex extends LocalIndex {
       .sort((a, b) => b.score - a.score)
       .slice(0, options.maxDocuments!);
   }
-
-
 
   public async beginUpdate(): Promise<void> {
     await super.beginUpdate(this.apiKey);
@@ -691,8 +448,6 @@ export class LocalDocumentIndex extends LocalIndex {
     }
     //creating catalog on the smart contract
     if (await this.isCatalogCreated()) {
-      // TODO: Load catalog update from smart contract
-
       this._catalog = {
         version: 1,
         count: 0,
