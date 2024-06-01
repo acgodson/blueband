@@ -9,9 +9,6 @@
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "bin": {
-    "vectra": "./bin/vector-db.js"
-  },
   "typesVersions": {
     "<3.9": {
       "*": [
